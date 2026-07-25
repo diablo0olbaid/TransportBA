@@ -1,0 +1,12 @@
+name = "ba-transit-proxy"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# Credenciales del GCBA: se cargan como secrets de Wrangler, NUNCA en el repo.
+#   wrangler secret put TRANSIT_CLIENT_ID
+#   wrangler secret put TRANSIT_CLIENT_SECRET
+# Para desarrollo local usar packages/proxy/.dev.vars (ver .dev.vars.example).
+
+[vars]
+# Origen permitido para CORS. Sobreescribir por entorno; nunca usar "*".
+ALLOWED_ORIGIN = "http://localhost:5173"

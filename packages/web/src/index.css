@@ -1,0 +1,58 @@
+@import '@fontsource-variable/inter';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Sistema visual (§13). El tema se controla con `data-theme` en <html>.
+ * Oscuro es el default; claro sobreescribe los tokens.
+ */
+:root,
+[data-theme='dark'] {
+  --color-bg-base: #0b0e14;
+  --color-bg-surface: #141922;
+  --color-bg-elevated: #1b212c;
+  --color-border: #232a36;
+  --color-text-primary: #e6eaf2;
+  --color-text-muted: #8b95a7;
+  --color-accent-ok: #34d399;
+  --color-accent-warn: #fbbf24;
+  --color-accent-bad: #f87171;
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --color-bg-base: #fafbfc;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-border: #e6e9ef;
+  --color-text-primary: #0f1520;
+  --color-text-muted: #5c6678;
+  color-scheme: light;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-base text-text-primary font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply tracking-heading;
+  }
+
+  /* Todos los números tabulares por defecto (§12). */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

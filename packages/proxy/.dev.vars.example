@@ -1,0 +1,5 @@
+# Copiar a packages/proxy/.dev.vars y completar con credenciales reales del GCBA.
+# Si NO se configuran, el Worker responde con fixtures (modo mock del proxy, §5).
+TRANSIT_CLIENT_ID=
+TRANSIT_CLIENT_SECRET=
+ALLOWED_ORIGIN=http://localhost:5173
