@@ -97,7 +97,29 @@ pnpm wrangler deploy --var ALLOWED_ORIGIN:https://tu-dominio.com
 
 Sin credenciales el Worker responde fixtures, así que se puede desplegar y probar igual.
 
-### Web (hosting estático / Cloudflare Pages)
+### Web en Vercel + proxy en Cloudflare (recomendado)
+
+El repo incluye `vercel.json` (build de `@ba-transit/web`, output `packages/web/dist`, rewrites
+SPA). Pasos:
+
+1. **Deploy del proxy en Cloudflare** (ver arriba). Anotá su URL, ej.
+   `https://ba-transit-proxy.tu-cuenta.workers.dev`.
+2. **Importá el repo en Vercel.** La config se toma de `vercel.json`; no hace falta tocar build
+   settings. Si Vercel no respeta pnpm 10, activá corepack con la env var
+   `ENABLE_EXPERIMENTAL_COREPACK=1`.
+3. **Variables de entorno en Vercel** (Production), antes de buildear — Vite las inyecta en build:
+   - `VITE_DATA_SOURCE=live`
+   - `VITE_PROXY_URL=https://ba-transit-proxy.tu-cuenta.workers.dev`
+4. **Deploy en Vercel** y anotá el dominio, ej. `https://tu-app.vercel.app`.
+5. **CORS**: reconfigurá el Worker para permitir ese dominio y redesplegalo:
+   `pnpm wrangler deploy --var ALLOWED_ORIGIN:https://tu-app.vercel.app`.
+6. Redeploy en Vercel si cambiaste variables después del primer build.
+
+Sin credenciales del GCBA en el Worker, la app igual funciona: el proxy sirve fixtures y la web
+muestra el aviso de fuente de datos. Para modo 100% mock sin backend, poné `VITE_DATA_SOURCE=mock`
+y omití el proxy.
+
+### Web (otros hostings estáticos / Cloudflare Pages)
 
 ```bash
 cd packages/web
