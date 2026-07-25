@@ -1,4 +1,4 @@
-import type { BikeStation } from '@ba-transit/shared';
+import type { BikeStation } from './domain.js';
 
 /**
  * Mezcla GBFS `stationInformation` + `stationStatus` → BikeStation[] (§5).

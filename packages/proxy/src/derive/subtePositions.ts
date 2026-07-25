@@ -1,4 +1,4 @@
-import type { Arrival, TrainPosition } from '@ba-transit/shared';
+import type { Arrival, TrainPosition } from '../domain.js';
 
 export interface StationRef {
   id: string;

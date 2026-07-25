@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { app } from './index.js';
 import { resetRateLimit } from './rateLimit.js';
-import type { HealthResponse } from '@ba-transit/shared';
+import type { HealthResponse } from './domain.js';
 
 beforeEach(() => resetRateLimit());
 

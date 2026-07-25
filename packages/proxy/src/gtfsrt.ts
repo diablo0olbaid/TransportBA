@@ -1,5 +1,5 @@
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
-import type { Arrival, ServiceAlert, VehiclePosition, Mode } from '@ba-transit/shared';
+import type { Arrival, ServiceAlert, VehiclePosition, Mode } from './domain.js';
 
 const { FeedMessage, Alert } = GtfsRealtimeBindings.transit_realtime;
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Arrival } from '@ba-transit/shared';
+import type { Arrival } from '../domain.js';
 import { deriveSubtePositions, type StationRef } from './subtePositions.js';
 
 const stations: StationRef[] = [

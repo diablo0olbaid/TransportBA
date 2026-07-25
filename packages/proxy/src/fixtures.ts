@@ -4,7 +4,7 @@ import type {
   ServiceAlert,
   TrainPosition,
   VehiclePosition,
-} from '@ba-transit/shared';
+} from './domain.js';
 
 /**
  * Fixtures para el modo mock del Worker (§5): si no hay credenciales, las rutas

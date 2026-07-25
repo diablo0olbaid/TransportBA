@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { Context } from 'hono';
-import type { HealthResponse, UpstreamHealth } from '@ba-transit/shared';
+import type { HealthResponse, UpstreamHealth } from './domain.js';
 import type { Env } from './types.js';
 import { UPSTREAM, TTL } from './config.js';
 import { hasCredentials, fetchUpstreamJson, fetchUpstreamProto } from './upstream.js';
