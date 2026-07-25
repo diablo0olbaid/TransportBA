@@ -17,6 +17,57 @@ function metersBetween(a: [number, number], b: [number, number]): number {
   return Math.hypot(dx, dy);
 }
 
+/** BBox `[minLon, minLat, maxLon, maxLat]` de un shape, expandido `meters`. */
+export function expandedBbox(
+  shape: [number, number][],
+  meters: number,
+): [number, number, number, number] {
+  let minLon = Infinity,
+    minLat = Infinity,
+    maxLon = -Infinity,
+    maxLat = -Infinity;
+  for (const [lon, lat] of shape) {
+    minLon = Math.min(minLon, lon);
+    minLat = Math.min(minLat, lat);
+    maxLon = Math.max(maxLon, lon);
+    maxLat = Math.max(maxLat, lat);
+  }
+  const dLat = meters / 110540;
+  const dLon = meters / (111320 * Math.cos((((minLat + maxLat) / 2) * Math.PI) / 180));
+  return [minLon - dLon, minLat - dLat, maxLon + dLon, maxLat + dLat];
+}
+
+export function pointInBbox(p: [number, number], b: [number, number, number, number]): boolean {
+  return p[0] >= b[0] && p[0] <= b[2] && p[1] >= b[1] && p[1] <= b[3];
+}
+
+/** Distancia mínima (metros) de un punto a una polyline. */
+export function distanceToPolyline(p: [number, number], shape: [number, number][]): number {
+  let best = Infinity;
+  const midLat = (p[1] * Math.PI) / 180;
+  const kx = Math.cos(midLat) * 111320;
+  const ky = 110540;
+  const px = p[0] * kx;
+  const py = p[1] * ky;
+  for (let i = 0; i < shape.length - 1; i += 1) {
+    const a = shape[i]!;
+    const b = shape[i + 1]!;
+    const ax = a[0] * kx,
+      ay = a[1] * ky,
+      bx = b[0] * kx,
+      by = b[1] * ky;
+    const dx = bx - ax,
+      dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2));
+    const fx = ax + t * dx,
+      fy = ay + t * dy;
+    const d = Math.hypot(px - fx, py - fy);
+    if (d < best) best = d;
+  }
+  return best;
+}
+
 export function buildTrack(shape: [number, number][]): Track {
   const cum: number[] = [0];
   for (let i = 1; i < shape.length; i += 1) {

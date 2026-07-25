@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
 import { useTransitStore } from '../../store/useTransitStore.js';
+import { AVAILABLE_BUS_LINES } from '../../data/mock/colectivos.js';
 import { Switch } from '../ui/primitives.js';
 
 /**
  * Control de colectivos (§9). Prender la capa muestra todos los colectivos en
- * circulación; opcionalmente se puede filtrar agregando números de línea.
+ * vivo; elegir una línea con recorrido conocido dibuja su traza y muestra sólo
+ * los coches que van sobre ella.
  */
 export function ColectivoInput(): JSX.Element {
   const busLines = useTransitStore((s) => s.busLines);
@@ -13,14 +13,14 @@ export function ColectivoInput(): JSX.Element {
   const removeBusLine = useTransitStore((s) => s.removeBusLine);
   const toggleLayer = useTransitStore((s) => s.toggleLayer);
   const showColectivos = useTransitStore((s) => s.layers.colectivos);
-  const [value, setValue] = useState('');
 
-  const add = () => {
-    const label = value.trim();
-    if (!label) return;
-    addBusLine(label);
-    if (!showColectivos) toggleLayer('colectivos');
-    setValue('');
+  const toggleLine = (label: string) => {
+    if (busLines.includes(label)) {
+      removeBusLine(label);
+    } else {
+      addBusLine(label);
+      if (!showColectivos) toggleLayer('colectivos');
+    }
   };
 
   return (
@@ -36,47 +36,28 @@ export function ColectivoInput(): JSX.Element {
         />
       </div>
       <p className="px-2 text-xs text-text-muted">
-        Prendé la capa para ver todos, o filtrá por número de línea.
+        Prendé la capa para ver todos, o elegí una línea para ver su recorrido y sus coches.
       </p>
-      <div className="flex gap-1 px-2">
-        <input
-          type="text"
-          inputMode="numeric"
-          value={value}
-          placeholder="Filtrar por línea (ej. 7)"
-          aria-label="Agregar línea de colectivo"
-          className="w-full rounded-control border border-border bg-base px-2 py-1.5 text-sm outline-none"
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && add()}
-        />
-        <button
-          type="button"
-          onClick={add}
-          className="rounded-control border border-border px-3 text-sm hover:bg-elevated"
-        >
-          +
-        </button>
-      </div>
-      {busLines.length > 0 && (
-        <div className="flex flex-wrap gap-1 px-2">
-          {busLines.map((label) => (
-            <span
+      <div className="flex flex-wrap gap-1 px-2">
+        {AVAILABLE_BUS_LINES.map((label) => {
+          const active = busLines.includes(label);
+          return (
+            <button
               key={label}
-              className="flex items-center gap-1 rounded-chip bg-elevated px-2 py-0.5 text-xs tabular"
+              type="button"
+              aria-pressed={active}
+              onClick={() => toggleLine(label)}
+              className={`rounded-chip border px-2.5 py-1 text-xs tabular transition-colors ${
+                active
+                  ? 'border-accent-ok bg-accent-ok/15 text-accent-ok'
+                  : 'border-border text-text-muted hover:bg-elevated'
+              }`}
             >
               {label}
-              <button
-                type="button"
-                aria-label={`Quitar línea ${label}`}
-                onClick={() => removeBusLine(label)}
-                className="text-text-muted hover:text-text-primary"
-              >
-                <X size={12} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

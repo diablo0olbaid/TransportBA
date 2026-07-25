@@ -45,9 +45,11 @@ así que **no se pudieron validar en vivo los payloads del GCBA**. Consecuencias
 ### Hallazgos con la API real (2026-07)
 
 - **Colectivos** (`vehiclePositions`): el feed identifica las líneas con IDs internos numéricos
-  (ej. `802`, `830`, `1738`), no con el número público de línea (7, 152…). Por eso el filtro por
-  número común no matchea. La UI muestra **todos** los colectivos al prender la capa; el filtro por
-  ID interno queda como opción.
+  (ej. `802`, `829`, `1738`) que **no coinciden** con los route_id del GTFS estático disponible,
+  así que no hay un mapeo confiable número público → coche. La UI muestra **todos** los colectivos
+  al prender la capa, y para filtrar una línea usa **proximidad geométrica al recorrido** (dibuja
+  la traza real de la línea y muestra los coches que van a ≤250 m de ella). Recorridos disponibles:
+  5, 7, 15, 29, 39, 68, 111, 152.
 - **Trenes** (`vehiclePositions`): el upstream responde **404** con estas credenciales (feed no
   disponible). El proxy devuelve lista vacía ("sin datos de trenes") en vez de error.
 
