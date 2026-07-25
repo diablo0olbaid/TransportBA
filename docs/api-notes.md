@@ -36,11 +36,20 @@ así que **no se pudieron validar en vivo los payloads del GCBA**. Consecuencias
   roundtrip encode→decode. La ruta live queda lista para usarse con credenciales.
 - **Ecobici GBFS** (`stationInformation` + `stationStatus`): GBFS es un estándar público; la
   mezcla (`ecobici.ts`) está implementada y testeada.
-- **`subtes/forecastGTFS`** (JSON propietario del GCBA): su shape exacto **no pudo verificarse**.
-  Las rutas `/v1/subte/positions` y `/v1/subte/arrivals` sirven **fixtures** por ahora. La
-  derivación de posiciones desde arribos (`derive/subtePositions.ts`, testeada, con el índice
-  `src/data/stations.json`) está lista para conectarse **cuando se confirme el shape** del
-  forecast. **Pendiente: confirmar el formato de `forecastGTFS` con la documentación oficial.**
+- **`subtes/forecastGTFS`** (JSON propietario del GCBA): **shape confirmado** contra la API real
+  y conectado (`subteForecast.ts`). Formato: `{ Header, Entity: [{ Linea: { Trip_Id, Route_Id
+("LineaA"…), Direction_ID, Estaciones: [{ stop_id ("1059N"), stop_name, arrival:{time,delay} }]
+}}]}`. Los `stop_id` traen sufijo de andén (N/S/O/E) que se recorta para mapear a la estación.
+  `/v1/subte/arrivals` y `/v1/subte/positions` (derivadas) devuelven datos reales con credenciales.
+
+### Hallazgos con la API real (2026-07)
+
+- **Colectivos** (`vehiclePositions`): el feed identifica las líneas con IDs internos numéricos
+  (ej. `802`, `830`, `1738`), no con el número público de línea (7, 152…). Por eso el filtro por
+  número común no matchea. La UI muestra **todos** los colectivos al prender la capa; el filtro por
+  ID interno queda como opción.
+- **Trenes** (`vehiclePositions`): el upstream responde **404** con estas credenciales (feed no
+  disponible). El proxy devuelve lista vacía ("sin datos de trenes") en vez de error.
 
 Sin credenciales, todas las rutas responden fixtures (modo mock del Worker, §5).
 

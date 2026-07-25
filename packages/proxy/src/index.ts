@@ -7,9 +7,14 @@ import { UPSTREAM, TTL } from './config.js';
 import { hasCredentials, fetchUpstreamJson, fetchUpstreamProto } from './upstream.js';
 import { decodeServiceAlerts, decodeVehiclePositions } from './gtfsrt.js';
 import { mergeEcobici } from './ecobici.js';
+import { parseSubteForecast } from './subteForecast.js';
+import { deriveSubtePositions, type StationRef } from './derive/subtePositions.js';
+import stationsData from './data/stations.json';
 import { cacheGet, cachePut } from './cache.js';
 import { checkRateLimit } from './rateLimit.js';
 import * as fx from './fixtures.js';
+
+const STATIONS = stationsData as StationRef[];
 
 export const app = new Hono<{ Bindings: Env }>();
 
@@ -66,19 +71,31 @@ async function serve<T>(
 
 // --- Rutas de datos (§5) ---------------------------------------------------
 
-// Subte no expone posiciones ni arribos en formato verificable desde este
-// entorno (forecastGTFS es JSON propietario del GCBA y su dominio está
-// bloqueado por la política de red). Se sirven fixtures y la derivación de
-// posiciones (derive/subtePositions.ts, testeada) se conecta al confirmar el
-// shape real. Ver docs/api-notes.md.
-app.get('/v1/subte/positions', (c) => {
-  c.header('X-Data-Source', 'fixtures');
-  return c.json(fx.fixtureSubtePositions());
-});
+// Subte: se deriva de forecastGTFS (JSON del GCBA). Sin credenciales, fixtures.
+app.get('/v1/subte/positions', (c) =>
+  serve(c, {
+    key: 'subte-positions',
+    ttl: TTL.positions,
+    live: async () => {
+      const raw = await fetchUpstreamJson(c.env, UPSTREAM.subteForecast);
+      return deriveSubtePositions(parseSubteForecast(raw), STATIONS);
+    },
+    fixture: fx.fixtureSubtePositions,
+  }),
+);
 
 app.get('/v1/subte/arrivals', (c) => {
-  c.header('X-Data-Source', 'fixtures');
-  return c.json(fx.fixtureArrivals());
+  const station = c.req.query('station');
+  return serve(c, {
+    key: `subte-arrivals-${station ?? 'all'}`,
+    ttl: TTL.arrivals,
+    live: async () => {
+      const raw = await fetchUpstreamJson(c.env, UPSTREAM.subteForecast);
+      const arrivals = parseSubteForecast(raw);
+      return station ? arrivals.filter((a) => a.stationId === station) : arrivals;
+    },
+    fixture: fx.fixtureArrivals,
+  });
 });
 
 app.get('/v1/subte/alerts', (c) =>
@@ -117,8 +134,14 @@ app.get('/v1/trenes/positions', (c) =>
     key: 'trenes-positions',
     ttl: TTL.positions,
     live: async () => {
-      const buf = await fetchUpstreamProto(c.env, UPSTREAM.trenesPositions);
-      return decodeVehiclePositions(buf, 'tren');
+      // El feed de trenes puede devolver 404 según credenciales; en ese caso
+      // se reporta "sin datos" (lista vacía) en vez de error (ver api-notes).
+      try {
+        const buf = await fetchUpstreamProto(c.env, UPSTREAM.trenesPositions);
+        return decodeVehiclePositions(buf, 'tren');
+      } catch {
+        return [];
+      }
     },
     fixture: fx.fixtureTrainPositions,
   }),

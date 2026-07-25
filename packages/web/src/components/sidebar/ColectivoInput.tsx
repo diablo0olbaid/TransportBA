@@ -1,50 +1,52 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTransitStore } from '../../store/useTransitStore.js';
-import { AVAILABLE_BUS_LINES } from '../../data/mock/colectivos.js';
+import { Switch } from '../ui/primitives.js';
 
-/** Chips agregables de líneas de colectivo (§9). */
+/**
+ * Control de colectivos (§9). Prender la capa muestra todos los colectivos en
+ * circulación; opcionalmente se puede filtrar agregando números de línea.
+ */
 export function ColectivoInput(): JSX.Element {
   const busLines = useTransitStore((s) => s.busLines);
   const addBusLine = useTransitStore((s) => s.addBusLine);
   const removeBusLine = useTransitStore((s) => s.removeBusLine);
   const toggleLayer = useTransitStore((s) => s.toggleLayer);
-  const layers = useTransitStore((s) => s.layers);
+  const showColectivos = useTransitStore((s) => s.layers.colectivos);
   const [value, setValue] = useState('');
-  const [error, setError] = useState(false);
 
   const add = () => {
     const label = value.trim();
     if (!label) return;
-    if (!AVAILABLE_BUS_LINES.includes(label)) {
-      setError(true);
-      return;
-    }
     addBusLine(label);
-    if (!layers.colectivos) toggleLayer('colectivos');
+    if (!showColectivos) toggleLayer('colectivos');
     setValue('');
-    setError(false);
   };
 
   return (
     <div className="flex flex-col gap-2 p-2">
-      <h2 className="px-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
-        Colectivos
-      </h2>
+      <div className="flex items-center justify-between px-2">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+          Colectivos
+        </h2>
+        <Switch
+          checked={showColectivos}
+          onChange={() => toggleLayer('colectivos')}
+          label="Mostrar colectivos"
+        />
+      </div>
+      <p className="px-2 text-xs text-text-muted">
+        Prendé la capa para ver todos, o filtrá por número de línea.
+      </p>
       <div className="flex gap-1 px-2">
         <input
           type="text"
           inputMode="numeric"
           value={value}
-          placeholder={`Línea (ej. ${AVAILABLE_BUS_LINES[0]})`}
+          placeholder="Filtrar por línea (ej. 7)"
           aria-label="Agregar línea de colectivo"
-          className={`w-full rounded-control border bg-base px-2 py-1.5 text-sm outline-none ${
-            error ? 'border-accent-bad' : 'border-border'
-          }`}
-          onChange={(e) => {
-            setValue(e.target.value);
-            setError(false);
-          }}
+          className="w-full rounded-control border border-border bg-base px-2 py-1.5 text-sm outline-none"
+          onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && add()}
         />
         <button
@@ -55,11 +57,6 @@ export function ColectivoInput(): JSX.Element {
           +
         </button>
       </div>
-      {error && (
-        <p className="px-2 text-xs text-accent-bad">
-          Sin traza disponible. Probá: {AVAILABLE_BUS_LINES.join(', ')}.
-        </p>
-      )}
       {busLines.length > 0 && (
         <div className="flex flex-wrap gap-1 px-2">
           {busLines.map((label) => (

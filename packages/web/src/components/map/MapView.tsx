@@ -15,6 +15,7 @@ import { BASEMAP_STYLE } from './basemaps.js';
 import { TrainsLayer } from './TrainsLayer.js';
 import { BusLayer } from './BusLayer.js';
 import { EcobiciLayer } from './EcobiciLayer.js';
+import { TrenesLayer } from './TrenesLayer.js';
 
 const DIM_OPACITY = 0.12;
 const FIT_PADDING = 64;
@@ -115,50 +116,57 @@ export function MapView(): JSX.Element {
     >
       <NavigationControl position="bottom-right" showCompass={false} />
 
-      <Source id="lines" type="geojson" data={linesGeo}>
-        <Layer
-          id="line-traces"
-          type="line"
-          layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-          paint={{
-            'line-color': ['get', 'color'],
-            'line-width': 4,
-            'line-opacity': opacity,
-          }}
-        />
-      </Source>
+      {/* Trazas, estaciones y formaciones de subte: se muestran con la capa Subte. */}
+      {layers.subte && (
+        <>
+          <Source id="lines" type="geojson" data={linesGeo}>
+            <Layer
+              id="line-traces"
+              type="line"
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{
+                'line-color': ['get', 'color'],
+                'line-width': 4,
+                'line-opacity': opacity,
+              }}
+            />
+          </Source>
 
-      <Source id="stations" type="geojson" data={stationsGeo}>
-        {/* Doble anillo para combinaciones (§9). */}
-        <Layer
-          id="station-transfer-ring"
-          type="circle"
-          filter={['==', ['get', 'isTransfer'], true]}
-          paint={{
-            'circle-radius': ['+', STATION_RADIUS, 3] as ExpressionSpecification,
-            'circle-color': 'rgba(0,0,0,0)',
-            'circle-stroke-color': '#E6EAF2',
-            'circle-stroke-width': 1.5,
-            'circle-stroke-opacity': opacity,
-          }}
-        />
-        <Layer
-          id="station-dots"
-          type="circle"
-          paint={{
-            'circle-radius': STATION_RADIUS,
-            'circle-color': ['get', 'color'],
-            'circle-stroke-color': '#0B0E14',
-            'circle-stroke-width': 1,
-            'circle-opacity': opacity,
-            'circle-stroke-opacity': opacity,
-          }}
-        />
-      </Source>
+          <Source id="stations" type="geojson" data={stationsGeo}>
+            {/* Doble anillo para combinaciones (§9). */}
+            <Layer
+              id="station-transfer-ring"
+              type="circle"
+              filter={['==', ['get', 'isTransfer'], true]}
+              paint={{
+                'circle-radius': ['+', STATION_RADIUS, 3] as ExpressionSpecification,
+                'circle-color': 'rgba(0,0,0,0)',
+                'circle-stroke-color': '#E6EAF2',
+                'circle-stroke-width': 1.5,
+                'circle-stroke-opacity': opacity,
+              }}
+            />
+            <Layer
+              id="station-dots"
+              type="circle"
+              paint={{
+                'circle-radius': STATION_RADIUS,
+                'circle-color': ['get', 'color'],
+                'circle-stroke-color': '#0B0E14',
+                'circle-stroke-width': 1,
+                'circle-opacity': opacity,
+                'circle-stroke-opacity': opacity,
+              }}
+            />
+          </Source>
+
+          <TrainsLayer />
+        </>
+      )}
 
       {layers.ecobici && <EcobiciLayer />}
       {layers.colectivos && <BusLayer />}
-      {layers.subte && <TrainsLayer />}
+      {layers.trenes && <TrenesLayer />}
     </Map>
   );
 }

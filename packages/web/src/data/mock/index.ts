@@ -2,7 +2,7 @@ import type { TransitAdapter } from '../adapter.js';
 import { LINES } from '../static/index.js';
 import { activeAlerts, delayedLinesFromAlerts } from './alerts.js';
 import { simulateSubteArrivals, simulateSubtePositions } from './subte.js';
-import { simulateColectivos } from './colectivos.js';
+import { simulateColectivos, AVAILABLE_BUS_LINES } from './colectivos.js';
 import { simulateBikeStations } from './ecobici.js';
 
 /**
@@ -24,7 +24,9 @@ export function createMockAdapter(seed: number): TransitAdapter {
       return simulateSubteArrivals(now, seed, stationId, delayedNow(now));
     },
     getAlerts: async () => activeAlerts(Date.now(), seed),
-    getBusPositions: async (lineIds) => simulateColectivos(Date.now(), seed, lineIds),
+    // Lista vacía = todas las líneas disponibles (§9: prender la capa muestra todo).
+    getBusPositions: async (lineIds) =>
+      simulateColectivos(Date.now(), seed, lineIds.length ? lineIds : AVAILABLE_BUS_LINES),
     // Trenes metropolitanos: sin datos en el mock de M3 (no listados en §8);
     // el adapter live los cubrirá en M6.
     getTrainPositions: async () => [],

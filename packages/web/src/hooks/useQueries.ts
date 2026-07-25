@@ -59,7 +59,18 @@ export function useBusPositionsQuery(
   return useQuery({
     queryKey: ['colectivos', [...lineIds].sort()],
     queryFn: () => getAdapter().getBusPositions(lineIds),
-    enabled: enabled && lineIds.length > 0,
+    // Con la capa activa se piden todos (lista vacía = todas las líneas).
+    enabled,
+    refetchInterval,
+  });
+}
+
+export function useTrainPositionsQuery(enabled: boolean): UseQueryResult<VehiclePosition[]> {
+  const refetchInterval = useRefetchInterval();
+  return useQuery({
+    queryKey: ['trenes'],
+    queryFn: () => getAdapter().getTrainPositions(),
+    enabled,
     refetchInterval,
   });
 }
