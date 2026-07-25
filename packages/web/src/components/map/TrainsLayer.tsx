@@ -23,7 +23,12 @@ const TRAIN_RADIUS: ExpressionSpecification = [
 
 /**
  * Capa de formaciones de subte moviéndose con interpolación suave (§10).
- * Renderiza sobre una fuente GeoJSON que se actualiza cada frame.
+ *
+ * Performance (§10): se usa una capa `circle` de MapLibre sobre una fuente
+ * GeoJSON (`setData` implícito vía la prop `data`) en lugar de marcadores DOM.
+ * Umbral elegido: **siempre capa GeoJSON**, incluso con pocas formaciones,
+ * porque el render lo hace la GPU de MapLibre y escala a 300+ puntos a 60fps
+ * sin costo de reconciliación de DOM. Lo mismo aplica a colectivos y Ecobici.
  */
 export function TrainsLayer(): JSX.Element {
   const targets = useSubtePositions(UPDATE_INTERVAL_MS);

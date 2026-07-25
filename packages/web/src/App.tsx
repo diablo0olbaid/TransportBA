@@ -6,6 +6,7 @@ import { Panel } from './components/detail/Panel.js';
 import { Ticker } from './components/ticker/Ticker.js';
 import { ShortcutsModal } from './components/ShortcutsModal.js';
 import { DataSourceBanner } from './components/DataSourceBanner.js';
+import { AccessibleLineTable } from './components/map/AccessibleLineTable.js';
 import { useTransitStore } from './store/useTransitStore.js';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js';
 import { useUrlState } from './hooks/useUrlState.js';
@@ -50,8 +51,9 @@ export function App(): JSX.Element {
           />
         )}
 
-        <main className="relative min-w-0 flex-1">
+        <main className="relative min-w-0 flex-1" aria-label="Mapa del transporte">
           <MapView />
+          <AccessibleLineTable />
         </main>
 
         <Panel />

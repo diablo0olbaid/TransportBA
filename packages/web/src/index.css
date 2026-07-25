@@ -55,6 +55,37 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Focus ring visible en toda la navegación por teclado (§12, accesibilidad). */
+  :focus-visible {
+    outline: 2px solid var(--color-accent-ok);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Respetar prefers-reduced-motion en toda la app (§10/§12). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Marquesina del ticker con transform (§9). */

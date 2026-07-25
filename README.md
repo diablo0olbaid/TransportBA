@@ -81,6 +81,43 @@ compartible/restaurable.
   credenciales el worker opera en modo mock. Las credenciales reales del GCBA se cargan como
   secrets de Wrangler, nunca en el repo.
 
+## Deploy
+
+### Proxy (Cloudflare Workers)
+
+```bash
+cd packages/proxy
+pnpm wrangler login
+# Credenciales del GCBA como secrets (nunca en el repo):
+pnpm wrangler secret put TRANSIT_CLIENT_ID
+pnpm wrangler secret put TRANSIT_CLIENT_SECRET
+# Origen permitido para CORS en producción:
+pnpm wrangler deploy --var ALLOWED_ORIGIN:https://tu-dominio.com
+```
+
+Sin credenciales el Worker responde fixtures, así que se puede desplegar y probar igual.
+
+### Web (hosting estático / Cloudflare Pages)
+
+```bash
+cd packages/web
+# Apuntar al proxy desplegado y activar datos en vivo:
+echo "VITE_DATA_SOURCE=live" > .env.production
+echo "VITE_PROXY_URL=https://ba-transit-proxy.tu-cuenta.workers.dev" >> .env.production
+pnpm build   # genera packages/web/dist/
+```
+
+Servir `packages/web/dist/` en cualquier hosting estático (Cloudflare Pages, Netlify, Vercel,
+S3+CDN). En Cloudflare Pages: build command `pnpm --filter @ba-transit/web build`, output
+`packages/web/dist`.
+
+## Accesibilidad y performance
+
+- Navegación completa por teclado, `aria-label` en los controles, focus rings visibles y una
+  tabla alternativa `sr-only` con las estaciones de la línea seleccionada.
+- Respeta `prefers-reduced-motion` (sin interpolación ni animaciones).
+- Vehículos renderizados como capas GeoJSON de MapLibre (GPU), escalables a 300+ marcadores.
+
 ## Estado del proyecto
 
 - [x] **M0 · Andamiaje** — monorepo, TS strict, ESLint/Prettier, Vitest, Tailwind con el
@@ -105,4 +142,5 @@ compartible/restaurable.
 - [x] **M6 · Live** — adapter live contra el proxy, switch por `VITE_DATA_SOURCE`, caída
       elegante a mock con aviso visible cuando el proxy no está o no tiene credenciales, y
       badge de dato desactualizado.
-- [ ] M7 · Pulido
+- [x] **M7 · Pulido** — accesibilidad (teclado, `aria-label`, focus rings, tabla `sr-only`),
+      `prefers-reduced-motion`, capas GeoJSON escalables y README con instrucciones de deploy.
