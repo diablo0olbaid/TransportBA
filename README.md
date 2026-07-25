@@ -99,15 +99,15 @@ Sin credenciales el Worker responde fixtures, así que se puede desplegar y prob
 
 ### Web en Vercel + proxy en Cloudflare (recomendado)
 
-El repo incluye `vercel.json` (build de `@ba-transit/web`, output `dist` en la raíz, rewrites
-SPA). El build de Vite escribe en `dist/` de la raíz del monorepo para que Vercel lo encuentre
-sin depender del Root/Output Directory del dashboard. Pasos:
+Al ser un monorepo, en Vercel hay que apuntar el proyecto a `packages/web`. Config incluida en
+`packages/web/vercel.json` (framework Vite, output `dist`, rewrites SPA). Pasos:
 
 1. **Deploy del proxy en Cloudflare** (ver arriba). Anotá su URL, ej.
    `https://ba-transit-proxy.tu-cuenta.workers.dev`.
-2. **Importá el repo en Vercel.** La config se toma de `vercel.json`; no hace falta tocar build
-   settings. Si Vercel no respeta pnpm 10, activá corepack con la env var
-   `ENABLE_EXPERIMENTAL_COREPACK=1`.
+2. **Importá el repo en Vercel** y en **Settings → General → Root Directory** poné
+   `packages/web` (dejá activado "Include files outside the root directory" para que instale el
+   workspace). Framework preset: Vite. No hace falta setear build/output a mano. Si Vercel no
+   respeta pnpm 10, activá corepack con `ENABLE_EXPERIMENTAL_COREPACK=1`.
 3. **Variables de entorno en Vercel** (Production), antes de buildear — Vite las inyecta en build:
    - `VITE_DATA_SOURCE=live`
    - `VITE_PROXY_URL=https://ba-transit-proxy.tu-cuenta.workers.dev`
