@@ -1,23 +1,31 @@
 import { LINES } from '../../data/static/index.js';
 import { isLineActive, useTransitStore } from '../../store/useTransitStore.js';
+import { useSubtePositionsQuery, useAlertsQuery } from '../../hooks/useQueries.js';
+import { computeLineStats, STATUS_LABEL } from '../../lib/lineStats.js';
+import { LineBadge, StatusChip } from '../ui/primitives.js';
+
+const LINE_IDS = LINES.map((l) => l.id);
 
 /**
- * Lista de líneas de subte (§9 sidebar). Click aísla la línea; cmd/ctrl+click
- * la agrega o quita de la selección. Refleja el estado de selección atenuando
- * las líneas fuera de foco.
+ * Filas de línea con color, estado de servicio y contador de formaciones
+ * activas (§9). Click aísla; cmd/ctrl+click agrega.
  */
 export function LineSelector(): JSX.Element {
   const selectedLines = useTransitStore((s) => s.selectedLines);
   const selectLine = useTransitStore((s) => s.selectLine);
+  const positions = useSubtePositionsQuery().data ?? [];
+  const alerts = useAlertsQuery().data ?? [];
+  const stats = computeLineStats(LINE_IDS, positions, alerts);
 
   return (
-    <nav aria-label="Líneas de subte" className="flex flex-col gap-1 p-2">
-      <h2 className="px-2 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
+    <nav aria-label="Líneas de subte" className="flex flex-col gap-0.5 p-2">
+      <h2 className="px-2 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-text-muted">
         Líneas
       </h2>
       {LINES.map((line) => {
         const active = isLineActive(selectedLines, line.id);
         const isSelected = selectedLines.includes(line.id);
+        const stat = stats[line.id]!;
         return (
           <button
             key={line.id}
@@ -29,17 +37,14 @@ export function LineSelector(): JSX.Element {
               isSelected ? 'bg-elevated' : ''
             } ${active ? 'opacity-100' : 'opacity-40'}`}
           >
-            <span
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold"
-              style={{ backgroundColor: line.color, color: line.textColor }}
-              aria-hidden
-            >
-              {line.shortName}
-            </span>
+            <LineBadge color={line.color} textColor={line.textColor} label={line.shortName} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm text-text-primary">{line.longName}</span>
-              <span className="block text-xs text-text-muted tabular">
-                {line.stations.length} estaciones
+              <span className="flex items-center gap-2">
+                <span className="truncate text-sm text-text-primary">{line.longName}</span>
+              </span>
+              <span className="mt-0.5 flex items-center gap-2">
+                <StatusChip status={stat.status} label={STATUS_LABEL[stat.status]} />
+                <span className="text-xs text-text-muted tabular">{stat.count} en circulación</span>
               </span>
             </span>
           </button>

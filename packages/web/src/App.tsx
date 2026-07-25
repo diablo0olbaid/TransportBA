@@ -1,59 +1,60 @@
-import { useEffect } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Header } from './components/header/Header.js';
+import { Sidebar } from './components/sidebar/Sidebar.js';
 import { MapView } from './components/map/MapView.js';
-import { LineSelector } from './components/sidebar/LineSelector.js';
+import { Panel } from './components/detail/Panel.js';
+import { Ticker } from './components/ticker/Ticker.js';
+import { ShortcutsModal } from './components/ShortcutsModal.js';
 import { useTransitStore } from './store/useTransitStore.js';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js';
+import { useUrlState } from './hooks/useUrlState.js';
 
 /**
- * Shell de la app (M2). Header + sidebar con selector de líneas + mapa base.
- * Todavía sin datos en vivo, ticker ni panel derecho (M3–M4).
+ * Shell completo de la app (M4): header, sidebar, mapa, panel de 4 tabs y
+ * ticker, con atajos de teclado, estado en la URL y responsive. Todo contra
+ * mocks.
  */
 export function App(): JSX.Element {
   const theme = useTransitStore((s) => s.theme);
-  const toggleTheme = useTransitStore((s) => s.toggleTheme);
-  const clearSelection = useTransitStore((s) => s.clearSelection);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Aplica el tema al documento (controla tokens CSS y basemap).
+  useKeyboardShortcuts();
+  useUrlState();
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
-  // Esc limpia la selección (§12).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') clearSelection();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [clearSelection]);
-
   return (
     <div className="flex h-full flex-col bg-base text-text-primary">
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
-        <span className="text-sm font-semibold tracking-heading">BA Transit Live</span>
-        <span className="flex items-center gap-1.5 text-xs text-text-muted">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-accent-ok" aria-hidden />
-          en vivo
-        </span>
-        <button
-          type="button"
-          onClick={toggleTheme}
-          aria-label={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
-          className="ml-auto flex h-8 w-8 items-center justify-center rounded-control border border-border text-text-muted transition-colors hover:bg-elevated hover:text-text-primary"
-        >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-      </header>
+      <Header onToggleSidebar={() => setSidebarOpen((v) => !v)} />
 
-      <div className="flex min-h-0 flex-1">
-        <aside className="hidden w-80 shrink-0 overflow-y-auto border-r border-border bg-surface md:block">
-          <LineSelector />
+      <div className="relative flex min-h-0 flex-1">
+        {/* Sidebar: fijo en desktop, overlay deslizable en mobile (§12). */}
+        <aside
+          className={`absolute inset-y-0 left-0 z-40 w-80 max-w-[85%] shrink-0 border-r border-border bg-surface transition-transform duration-200 md:static md:z-auto md:translate-x-0 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          }`}
+        >
+          <Sidebar />
         </aside>
+        {sidebarOpen && (
+          <div
+            className="absolute inset-0 z-30 bg-black/40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+            role="presentation"
+          />
+        )}
 
         <main className="relative min-w-0 flex-1">
           <MapView />
         </main>
+
+        <Panel />
       </div>
+
+      <Ticker />
+      <ShortcutsModal />
     </div>
   );
 }

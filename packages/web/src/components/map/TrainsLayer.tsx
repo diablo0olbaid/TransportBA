@@ -33,6 +33,7 @@ export function TrainsLayer(): JSX.Element {
   const features: Feature<Point>[] = interpolated.map((t) => ({
     type: 'Feature',
     properties: {
+      trainId: t.item.id,
       lineId: t.item.lineId,
       color: COLOR_BY_LINE.get(t.item.lineId) ?? '#8B95A7',
       opacity: t.opacity,

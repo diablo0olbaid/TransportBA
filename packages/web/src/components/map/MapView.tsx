@@ -13,6 +13,8 @@ import { boundsOfLines, buildLinesGeoJSON, buildStationsGeoJSON } from '../../li
 import { useTransitStore } from '../../store/useTransitStore.js';
 import { BASEMAP_STYLE } from './basemaps.js';
 import { TrainsLayer } from './TrainsLayer.js';
+import { BusLayer } from './BusLayer.js';
+import { EcobiciLayer } from './EcobiciLayer.js';
 
 const DIM_OPACITY = 0.12;
 const FIT_PADDING = 64;
@@ -34,8 +36,12 @@ export function MapView(): JSX.Element {
   const mapRef = useRef<MapRef>(null);
   const theme = useTransitStore((s) => s.theme);
   const selectedLines = useTransitStore((s) => s.selectedLines);
+  const layers = useTransitStore((s) => s.layers);
   const selectLine = useTransitStore((s) => s.selectLine);
+  const selectStation = useTransitStore((s) => s.selectStation);
+  const selectTrain = useTransitStore((s) => s.selectTrain);
   const clearSelection = useTransitStore((s) => s.clearSelection);
+  const selectedStationId = useTransitStore((s) => s.selectedStationId);
 
   const linesGeo = useMemo(() => buildLinesGeoJSON(LINES), []);
   const stationsGeo = useMemo(() => buildStationsGeoJSON(LINES), []);
@@ -66,22 +72,43 @@ export function MapView(): JSX.Element {
   const onClick = useCallback(
     (e: MapLayerMouseEvent) => {
       const feature = e.features?.[0];
-      const lineId = feature?.properties?.lineId as string | undefined;
-      if (lineId) {
-        selectLine(lineId, e.originalEvent.metaKey || e.originalEvent.ctrlKey);
-      } else {
-        clearSelection();
+      const props = feature?.properties ?? {};
+      switch (feature?.layer.id) {
+        case 'train-dots':
+          selectTrain(props.trainId as string);
+          return;
+        case 'station-dots':
+          selectStation(props.stationId as string);
+          return;
+        case 'line-traces':
+          selectLine(props.lineId as string, e.originalEvent.metaKey || e.originalEvent.ctrlKey);
+          return;
+        default:
+          clearSelection();
       }
     },
-    [selectLine, clearSelection],
+    [selectLine, selectStation, selectTrain, clearSelection],
   );
+
+  // flyTo a la estación seleccionada (click o buscador, §9).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !selectedStationId || typeof map.flyTo !== 'function') return;
+    for (const line of LINES) {
+      const st = line.stations.find((s) => s.id === selectedStationId);
+      if (st) {
+        map.flyTo({ center: st.coord, zoom: 14.5, duration: 700 });
+        return;
+      }
+    }
+  }, [selectedStationId]);
 
   return (
     <Map
       ref={mapRef}
       mapStyle={BASEMAP_STYLE[theme]}
       initialViewState={{ longitude: -58.44, latitude: -34.61, zoom: 11 }}
-      interactiveLayerIds={['line-traces', 'station-dots']}
+      interactiveLayerIds={['train-dots', 'station-dots', 'line-traces']}
       onLoad={onLoad}
       onClick={onClick}
       cursor="auto"
@@ -129,7 +156,9 @@ export function MapView(): JSX.Element {
         />
       </Source>
 
-      <TrainsLayer />
+      {layers.ecobici && <EcobiciLayer />}
+      {layers.colectivos && <BusLayer />}
+      {layers.subte && <TrainsLayer />}
     </Map>
   );
 }

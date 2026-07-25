@@ -67,6 +67,12 @@ La UI consume datos sólo a través de `data/adapter.ts`. La implementación se 
 `VITE_DATA_SOURCE` (`mock` por defecto, `live` desde M6). El mock es determinista con
 `VITE_MOCK_SEED`.
 
+## Atajos de teclado
+
+`/` buscar · `1–7` aislar línea (A–H, P) · `Esc` limpiar y cerrar panel · `L` capa colectivos ·
+`?` ayuda. El estado (líneas, estación, capas, colectivos) se refleja en la URL y es
+compartible/restaurable.
+
 ## Configuración
 
 - **Web:** copiar `packages/web/.env.example` a `.env`. `VITE_DATA_SOURCE=mock` (default) no
@@ -89,7 +95,10 @@ La UI consume datos sólo a través de `data/adapter.ts`. La implementación se 
       determinista (subte con frecuencia por franja horaria, arribos, alertas rotativas,
       Ecobici por hora, colectivos sobre 8 trazas reales) e interpolación suave de trenes
       (`useInterpolatedPositions`, §10). La app se ve viva sin credenciales.
-- [ ] M4 · UI completa
+- [x] **M4 · UI completa** — header (reloj AR, frescura, auto-refresh), sidebar (líneas con
+      estado y conteo, capas, colectivos, buscador fuzzy), panel de 4 tabs (Estado/Estación/
+      Formación/Métricas con Recharts), ticker de alertas, atajos de teclado, estado en la URL
+      y responsive. TanStack Query con polling pausable. Todo contra mocks.
 - [ ] M5 · Proxy
 - [ ] M6 · Live
 - [ ] M7 · Pulido
