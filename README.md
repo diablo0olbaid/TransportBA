@@ -72,7 +72,9 @@ de la red.
 - [x] **M1 · Datos estáticos** — GTFS oficial de SBASE vendorizado, script generador
       (`build:static`), JSON tipado de las 7 líneas con estaciones ordenadas, shapes,
       combinaciones y accesibilidad. Test de invariantes (bbox CABA, orden, colores).
-- [ ] M2 · Mapa base
+- [x] **M2 · Mapa base** — MapLibre + CARTO (dark-matter/positron por tema), trazas y
+      estaciones de las 7 líneas, selección con atenuación y `fitBounds`, store Zustand,
+      toggle de tema. Sin datos en vivo.
 - [ ] M3 · Adapter + mocks
 - [ ] M4 · UI completa
 - [ ] M5 · Proxy
