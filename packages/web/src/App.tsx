@@ -5,9 +5,11 @@ import { MapView } from './components/map/MapView.js';
 import { Panel } from './components/detail/Panel.js';
 import { Ticker } from './components/ticker/Ticker.js';
 import { ShortcutsModal } from './components/ShortcutsModal.js';
+import { DataSourceBanner } from './components/DataSourceBanner.js';
 import { useTransitStore } from './store/useTransitStore.js';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js';
 import { useUrlState } from './hooks/useUrlState.js';
+import { useDataSourceHealth } from './hooks/useDataSourceHealth.js';
 
 /**
  * Shell completo de la app (M4): header, sidebar, mapa, panel de 4 tabs y
@@ -20,6 +22,7 @@ export function App(): JSX.Element {
 
   useKeyboardShortcuts();
   useUrlState();
+  useDataSourceHealth();
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -28,6 +31,7 @@ export function App(): JSX.Element {
   return (
     <div className="flex h-full flex-col bg-base text-text-primary">
       <Header onToggleSidebar={() => setSidebarOpen((v) => !v)} />
+      <DataSourceBanner />
 
       <div className="relative flex min-h-0 flex-1">
         {/* Sidebar: fijo en desktop, overlay deslizable en mobile (§12). */}

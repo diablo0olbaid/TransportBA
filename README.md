@@ -102,5 +102,7 @@ compartible/restaurable.
 - [x] **M5 · Proxy** — Cloudflare Worker (Hono) con todas las rutas del §5, decode GTFS-RT,
       mezcla GBFS de Ecobici, cache con TTL, CORS, rate limit, health y fixtures. Tests del
       decoder, la derivación y las rutas. `curl localhost:8787/v1/health` responde.
-- [ ] M6 · Live
+- [x] **M6 · Live** — adapter live contra el proxy, switch por `VITE_DATA_SOURCE`, caída
+      elegante a mock con aviso visible cuando el proxy no está o no tiene credenciales, y
+      badge de dato desactualizado.
 - [ ] M7 · Pulido

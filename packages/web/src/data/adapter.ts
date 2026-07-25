@@ -35,13 +35,31 @@ export function resolveSeed(): number {
   return Number.isFinite(n) ? n : 1;
 }
 
-let cached: TransitAdapter | null = null;
+export function resolveProxyUrl(): string {
+  return import.meta.env.VITE_PROXY_URL ?? 'http://localhost:8787';
+}
 
-/** Devuelve el adapter según `VITE_DATA_SOURCE` (default `mock`), memoizado. */
+let cached: TransitAdapter | null = null;
+let override: TransitAdapter | null = null;
+
+/** Devuelve el adapter efectivo: override (fallback) > configurado, memoizado. */
 export function getAdapter(): TransitAdapter {
+  if (override) return override;
   if (!cached) {
     cached =
-      resolveDataSource() === 'live' ? createLiveAdapter() : createMockAdapter(resolveSeed());
+      resolveDataSource() === 'live'
+        ? createLiveAdapter(resolveProxyUrl())
+        : createMockAdapter(resolveSeed());
   }
   return cached;
+}
+
+/** Fuerza un adapter (caída elegante a mock cuando el proxy no está, M6). */
+export function setAdapterOverride(impl: TransitAdapter | null): void {
+  override = impl;
+}
+
+/** Crea un adapter mock a demanda (para el fallback). */
+export function createFallbackMock(): TransitAdapter {
+  return createMockAdapter(resolveSeed());
 }

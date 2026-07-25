@@ -50,6 +50,10 @@ interface TransitState {
   shortcutsOpen: boolean;
   setShortcutsOpen: (open: boolean) => void;
 
+  /** Aviso de fuente de datos (mock / fallback / live), M6. */
+  dataNotice: { level: 'ok' | 'info' | 'warn'; text: string } | null;
+  setDataNotice: (notice: TransitState['dataNotice']) => void;
+
   /** Se incrementa para pedir foco en el buscador (atajo `/`). */
   searchFocusSignal: number;
   requestSearchFocus: () => void;
@@ -109,6 +113,9 @@ export const useTransitStore = create<TransitState>((set) => ({
 
   shortcutsOpen: false,
   setShortcutsOpen: (shortcutsOpen) => set({ shortcutsOpen }),
+
+  dataNotice: null,
+  setDataNotice: (dataNotice) => set({ dataNotice }),
 
   searchFocusSignal: 0,
   requestSearchFocus: () => set((s) => ({ searchFocusSignal: s.searchFocusSignal + 1 })),

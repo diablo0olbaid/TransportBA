@@ -12,14 +12,31 @@ const REFRESH_OPTIONS: { value: AutoRefresh; label: string }[] = [
   { value: null, label: 'Manual' },
 ];
 
-function Freshness({ updatedAt, now }: { updatedAt: number; now: number }): JSX.Element {
+function Freshness({
+  updatedAt,
+  now,
+  stale,
+}: {
+  updatedAt: number;
+  now: number;
+  stale: boolean;
+}): JSX.Element {
   const ageS = updatedAt === 0 ? Infinity : (now - updatedAt) / 1000;
   const tone =
-    ageS > 180 ? 'bg-accent-bad' : ageS > 90 ? 'bg-accent-warn' : 'bg-accent-ok animate-pulse';
+    stale || ageS > 180
+      ? 'bg-accent-bad'
+      : ageS > 90
+        ? 'bg-accent-warn'
+        : 'bg-accent-ok animate-pulse';
   return (
     <span className="flex items-center gap-1.5 text-xs text-text-muted">
       <span className={`h-2 w-2 rounded-full ${tone}`} aria-hidden />
       {updatedAt === 0 ? 'conectando…' : relativeTime(updatedAt, now)}
+      {stale && (
+        <span className="rounded-chip bg-accent-bad/15 px-1.5 py-0.5 text-[11px] text-accent-bad">
+          desactualizado
+        </span>
+      )}
     </span>
   );
 }
@@ -31,7 +48,10 @@ export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }): JS
   const toggleTheme = useTransitStore((s) => s.toggleTheme);
   const autoRefresh = useTransitStore((s) => s.autoRefresh);
   const setAutoRefresh = useTransitStore((s) => s.setAutoRefresh);
-  const updatedAt = useSubtePositionsQuery().dataUpdatedAt;
+  const subteQuery = useSubtePositionsQuery();
+  const updatedAt = subteQuery.dataUpdatedAt;
+  // Dato previo mostrándose tras un fallo de fetch (§11).
+  const stale = subteQuery.isError && (subteQuery.data?.length ?? 0) > 0;
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-3 sm:px-4">
@@ -50,7 +70,7 @@ export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }): JS
         {buenosAiresClock(now)}
       </span>
 
-      <Freshness updatedAt={updatedAt} now={now} />
+      <Freshness updatedAt={updatedAt} now={now} stale={stale} />
 
       <div className="ml-auto flex items-center gap-1">
         <div
