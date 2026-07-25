@@ -14,7 +14,13 @@ import * as fx from './fixtures.js';
 export const app = new Hono<{ Bindings: Env }>();
 
 app.use('/v1/*', (c, next) => {
-  const origin = c.env?.ALLOWED_ORIGIN ?? 'http://localhost:5173';
+  // ALLOWED_ORIGIN admite varios orígenes separados por coma (prod + local).
+  const allowed = (c.env?.ALLOWED_ORIGIN ?? 'http://localhost:5173')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  const origin = (reqOrigin: string) =>
+    allowed.includes(reqOrigin) ? reqOrigin : (allowed[0] ?? '');
   return cors({ origin, allowMethods: ['GET', 'OPTIONS'] })(c, next);
 });
 
