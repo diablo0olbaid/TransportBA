@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build:static": "tsx scripts/build-static-data.ts",
+    "build:colectivos": "tsx scripts/build-colectivo-data.ts",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

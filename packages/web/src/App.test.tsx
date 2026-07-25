@@ -17,6 +17,9 @@ vi.mock('react-map-gl/maplibre', () => ({
   NavigationControl: () => null,
 }));
 
+// La capa de trenes corre un loop rAF y consulta el adapter; se aísla del smoke.
+vi.mock('./components/map/TrainsLayer.js', () => ({ TrainsLayer: () => null }));
+
 afterEach(cleanup);
 beforeEach(() => {
   useTransitStore.setState({ selectedLines: [], theme: 'dark' });

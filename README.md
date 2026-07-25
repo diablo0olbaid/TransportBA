@@ -55,7 +55,17 @@ pnpm --filter @ba-transit/web build:static
 ```
 
 El output (`packages/web/src/data/static/lines.json`) está versionado, así el build no depende
-de la red.
+de la red. Las trazas de 8 líneas de colectivo (para el simulador de mocks) se generan aparte:
+
+```bash
+pnpm --filter @ba-transit/web build:colectivos
+```
+
+## Fuente de datos (mock / live)
+
+La UI consume datos sólo a través de `data/adapter.ts`. La implementación se elige con
+`VITE_DATA_SOURCE` (`mock` por defecto, `live` desde M6). El mock es determinista con
+`VITE_MOCK_SEED`.
 
 ## Configuración
 
@@ -75,7 +85,10 @@ de la red.
 - [x] **M2 · Mapa base** — MapLibre + CARTO (dark-matter/positron por tema), trazas y
       estaciones de las 7 líneas, selección con atenuación y `fitBounds`, store Zustand,
       toggle de tema. Sin datos en vivo.
-- [ ] M3 · Adapter + mocks
+- [x] **M3 · Adapter + mocks** — interface del adapter (`data/adapter.ts`), simulador
+      determinista (subte con frecuencia por franja horaria, arribos, alertas rotativas,
+      Ecobici por hora, colectivos sobre 8 trazas reales) e interpolación suave de trenes
+      (`useInterpolatedPositions`, §10). La app se ve viva sin credenciales.
 - [ ] M4 · UI completa
 - [ ] M5 · Proxy
 - [ ] M6 · Live

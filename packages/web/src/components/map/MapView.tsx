@@ -12,6 +12,7 @@ import { LINES } from '../../data/static/index.js';
 import { boundsOfLines, buildLinesGeoJSON, buildStationsGeoJSON } from '../../lib/geo.js';
 import { useTransitStore } from '../../store/useTransitStore.js';
 import { BASEMAP_STYLE } from './basemaps.js';
+import { TrainsLayer } from './TrainsLayer.js';
 
 const DIM_OPACITY = 0.12;
 const FIT_PADDING = 64;
@@ -127,6 +128,8 @@ export function MapView(): JSX.Element {
           }}
         />
       </Source>
+
+      <TrainsLayer />
     </Map>
   );
 }

@@ -8,3 +8,4 @@ SPEC.md
 
 # Datos generados desde GTFS (formato lo define el generador, no Prettier).
 packages/web/src/data/static/lines.json
+packages/web/src/data/static/colectivo-lines.json
