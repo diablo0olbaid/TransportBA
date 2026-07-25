@@ -44,6 +44,19 @@ pnpm dev        # levanta web (http://localhost:5173) + worker (http://localhost
 | `pnpm lint`      | ESLint.                               |
 | `pnpm format`    | Prettier `--write`.                   |
 
+## Datos estáticos
+
+Las 7 líneas (estaciones, orden, trazas, combinaciones) se generan desde el GTFS oficial de
+SBASE, vendorizado en `packages/web/scripts/gtfs/` (ver `SOURCE.md` ahí y
+[`docs/api-notes.md`](./docs/api-notes.md)). Para regenerar:
+
+```bash
+pnpm --filter @ba-transit/web build:static
+```
+
+El output (`packages/web/src/data/static/lines.json`) está versionado, así el build no depende
+de la red.
+
 ## Configuración
 
 - **Web:** copiar `packages/web/.env.example` a `.env`. `VITE_DATA_SOURCE=mock` (default) no
@@ -56,7 +69,9 @@ pnpm dev        # levanta web (http://localhost:5173) + worker (http://localhost
 
 - [x] **M0 · Andamiaje** — monorepo, TS strict, ESLint/Prettier, Vitest, Tailwind con el
       sistema visual, `pnpm dev` levantando web + worker.
-- [ ] M1 · Datos estáticos
+- [x] **M1 · Datos estáticos** — GTFS oficial de SBASE vendorizado, script generador
+      (`build:static`), JSON tipado de las 7 líneas con estaciones ordenadas, shapes,
+      combinaciones y accesibilidad. Test de invariantes (bbox CABA, orden, colores).
 - [ ] M2 · Mapa base
 - [ ] M3 · Adapter + mocks
 - [ ] M4 · UI completa
