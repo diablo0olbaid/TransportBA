@@ -99,6 +99,8 @@ compartible/restaurable.
       estado y conteo, capas, colectivos, buscador fuzzy), panel de 4 tabs (Estado/Estación/
       Formación/Métricas con Recharts), ticker de alertas, atajos de teclado, estado en la URL
       y responsive. TanStack Query con polling pausable. Todo contra mocks.
-- [ ] M5 · Proxy
+- [x] **M5 · Proxy** — Cloudflare Worker (Hono) con todas las rutas del §5, decode GTFS-RT,
+      mezcla GBFS de Ecobici, cache con TTL, CORS, rate limit, health y fixtures. Tests del
+      decoder, la derivación y las rutas. `curl localhost:8787/v1/health` responde.
 - [ ] M6 · Live
 - [ ] M7 · Pulido

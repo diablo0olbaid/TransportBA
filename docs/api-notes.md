@@ -26,6 +26,24 @@ de descarga. Detalle en `packages/web/scripts/gtfs/SOURCE.md`.
 credenciales del GCBA). Sin eso, el adapter `live` no podrá alcanzar el upstream y la app debe
 caer a mock con aviso visible (§16, criterio de M6).
 
+## M5 · Proxy — shapes de upstream no verificables
+
+El dominio `apitransporte.buenosaires.gob.ar` está bloqueado por la política de red del entorno,
+así que **no se pudieron validar en vivo los payloads del GCBA**. Consecuencias:
+
+- **GTFS-RT** (colectivos/trenes `vehiclePositions`, `serviceAlerts`): el formato es el estándar
+  GTFS-Realtime, así que el decoder (`gtfsrt.ts`) está implementado y testeado por
+  roundtrip encode→decode. La ruta live queda lista para usarse con credenciales.
+- **Ecobici GBFS** (`stationInformation` + `stationStatus`): GBFS es un estándar público; la
+  mezcla (`ecobici.ts`) está implementada y testeada.
+- **`subtes/forecastGTFS`** (JSON propietario del GCBA): su shape exacto **no pudo verificarse**.
+  Las rutas `/v1/subte/positions` y `/v1/subte/arrivals` sirven **fixtures** por ahora. La
+  derivación de posiciones desde arribos (`derive/subtePositions.ts`, testeada, con el índice
+  `src/data/stations.json`) está lista para conectarse **cuando se confirme el shape** del
+  forecast. **Pendiente: confirmar el formato de `forecastGTFS` con la documentación oficial.**
+
+Sin credenciales, todas las rutas responden fixtures (modo mock del Worker, §5).
+
 ## Decisiones sobre los datos generados (§7)
 
 - **Colores de línea:** se usan los oficiales del §13, no los del GTFS (que difieren).
