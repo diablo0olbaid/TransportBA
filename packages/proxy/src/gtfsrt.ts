@@ -27,7 +27,9 @@ export function decodeVehiclePositions(buffer: Uint8Array, mode: Mode): VehicleP
     if (!v?.position) continue;
     const lineId = v.trip?.routeId ?? '';
     out.push({
-      id: entity.id || v.vehicle?.id || `${mode}-${out.length}`,
+      // Se prefiere el id del vehículo (estable) para que la interpolación
+      // matchee el mismo coche entre updates; si no, cae al id de entidad.
+      id: v.vehicle?.id || entity.id || `${mode}-${out.length}`,
       mode,
       lineId,
       lineLabel: v.trip?.routeId ?? lineId,

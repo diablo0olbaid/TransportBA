@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Layer, Source } from 'react-map-gl/maplibre';
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Feature, FeatureCollection, Point } from 'geojson';
@@ -5,8 +6,6 @@ import { hashString } from '../../lib/rng.js';
 import { useTrainPositionsQuery } from '../../hooks/useQueries.js';
 import { useInterpolatedPositions } from '../../hooks/useInterpolatedPositions.js';
 import { useTransitStore } from '../../store/useTransitStore.js';
-
-const UPDATE_INTERVAL_MS = 15000;
 
 function colorForLine(label: string): string {
   const hue = hashString(label || 'tren') % 360;
@@ -16,15 +15,23 @@ function colorForLine(label: string): string {
 /** Trenes metropolitanos en vivo (§1). Vacío si el feed no está disponible. */
 export function TrenesLayer(): JSX.Element {
   const enabled = useTransitStore((s) => s.layers.trenes);
-  const targets = useTrainPositionsQuery(enabled).data ?? [];
-  const interpolated = useInterpolatedPositions(
-    targets.map((v) => ({ id: v.id, coord: v.coord, bearing: v.bearing ?? 0, item: v })),
-    UPDATE_INTERVAL_MS,
+  const interval = useTransitStore((s) => s.autoRefresh) ?? 30000;
+  const query = useTrainPositionsQuery(enabled);
+  const targets = useMemo(
+    () =>
+      (query.data ?? []).map((v) => ({
+        id: v.id,
+        coord: v.coord,
+        bearing: v.bearing ?? 0,
+        label: v.lineLabel,
+      })),
+    [query.data],
   );
+  const interpolated = useInterpolatedPositions(targets, interval);
 
   const features: Feature<Point>[] = interpolated.map((t) => ({
     type: 'Feature',
-    properties: { color: colorForLine(t.item.item.lineLabel), opacity: t.opacity },
+    properties: { color: colorForLine(t.item.label), opacity: t.opacity },
     geometry: { type: 'Point', coordinates: t.coord },
   }));
   const data: FeatureCollection<Point> = { type: 'FeatureCollection', features };

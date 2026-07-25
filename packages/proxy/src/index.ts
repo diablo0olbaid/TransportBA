@@ -10,11 +10,20 @@ import { mergeEcobici } from './ecobici.js';
 import { parseSubteForecast } from './subteForecast.js';
 import { deriveSubtePositions, type StationRef } from './derive/subtePositions.js';
 import stationsData from './data/stations.json';
+import colectivoRoutes from './data/colectivo-routes.json';
 import { cacheGet, cachePut } from './cache.js';
 import { checkRateLimit } from './rateLimit.js';
 import * as fx from './fixtures.js';
 
 const STATIONS = stationsData as StationRef[];
+
+// Diccionario número de línea público → route_ids internos del feed en vivo
+// (ej. "152" → ["118","464","1563"]), derivado del GTFS oficial de colectivos.
+const ROUTE_MAP = colectivoRoutes as Record<string, string[]>;
+const ID_TO_LINE = new Map<string, string>();
+for (const [num, ids] of Object.entries(ROUTE_MAP)) {
+  for (const id of ids) ID_TO_LINE.set(id, num);
+}
 
 export const app = new Hono<{ Bindings: Env }>();
 
@@ -121,9 +130,16 @@ app.get('/v1/colectivos/positions', (c) => {
     live: async () => {
       const buf = await fetchUpstreamProto(c.env, UPSTREAM.colectivosPositions);
       const all = decodeVehiclePositions(buf, 'colectivo');
-      return lines.length
-        ? all.filter((v) => lines.includes(v.lineLabel) || lines.includes(v.lineId))
-        : all;
+      // Etiquetar cada coche con su número de línea público cuando se conoce.
+      for (const v of all) {
+        const num = ID_TO_LINE.get(v.lineId);
+        if (num) v.lineLabel = num;
+      }
+      if (!lines.length) return all;
+      // Expandir los números pedidos a sus route_ids internos y filtrar.
+      const wantedIds = new Set<string>();
+      for (const l of lines) for (const id of ROUTE_MAP[l] ?? [l]) wantedIds.add(id);
+      return all.filter((v) => wantedIds.has(v.lineId) || lines.includes(v.lineLabel));
     },
     fixture: () => fx.fixtureBusPositions(lines),
   });
